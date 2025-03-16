@@ -308,6 +308,12 @@ func main() {
 		lotsa.Ops(N, 1, func(i, _ int) {
 			gtrG.Delete(items[i])
 		})
+
+		print_label("google", "seq-delete")
+		lotsa.Ops(N, 1, func(i, _ int) {
+			gtr.Delete(items[i])
+		})
+
 	}
 
 	if withRand {
@@ -358,14 +364,14 @@ func main() {
 				})
 			}
 			print_label("tidwall", "set-after-copy")
-			ttr = ttr.Copy()
+			ttr2 := ttr.Copy()
 			lotsa.Ops(N, 1, func(i, _ int) {
-				ttr.Set(items[i])
+				ttr2.Set(items[i])
 			})
 			print_label("tidwall(G)", "set-after-copy")
-			ttrG = ttrG.Copy()
+			ttrG2 := ttrG.Copy()
 			lotsa.Ops(N, 1, func(i, _ int) {
-				ttrG.Set(items[i])
+				ttrG2.Set(items[i])
 			})
 			print_label("tidwall", "load-rand")
 			ttr = newTBTree(degree)
@@ -387,6 +393,7 @@ func main() {
 		if withRandDel {
 			println()
 			println("** random delete **")
+			shuffleInts()
 
 			print_label("tidwall(G)", "rand-delete")
 			lotsa.Ops(N, 1, func(i, _ int) {
