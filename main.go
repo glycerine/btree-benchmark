@@ -130,6 +130,7 @@ func main() {
 	withPivot := true
 	withScan := true
 	withHints := true
+	withDelete := true
 
 	fmt.Printf("\ndegree=%d, key=string (16 bytes), val=int64, count=%d\n",
 		degree, N)
@@ -285,6 +286,26 @@ func main() {
 				}
 			})
 		}
+	}
+
+	if withDelete {
+		println()
+		println("** sequential delete **")
+
+		print_label("tidwall(G)", "seq-delete")
+		lotsa.Ops(N, 1, func(i, _ int) {
+			ttrG.Delete(items[i])
+		})
+
+		print_label("uART", "seq-delete")
+		lotsa.Ops(N, 1, func(i, _ int) {
+			uART.Remove(itemsBinaryKey[i])
+		})
+
+		print_label("google(G)", "seq-delete")
+		lotsa.Ops(N, 1, func(i, _ int) {
+			gtrG.Delete(items[i])
+		})
 	}
 
 	if withRand {
