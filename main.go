@@ -114,6 +114,7 @@ func main() {
 		for i := range items {
 			j := rand.Intn(i + 1)
 			items[i], items[j] = items[j], items[i]
+			itemsBinaryKey[i], itemsBinaryKey[j] = itemsBinaryKey[j], itemsBinaryKey[i]
 		}
 	}
 
@@ -127,6 +128,7 @@ func main() {
 	withSeq := true
 	withRand := true
 	withRandSet := true
+	withRandDel := true
 	withPivot := true
 	withScan := true
 	withHints := true
@@ -333,6 +335,11 @@ func main() {
 			lotsa.Ops(N, 1, func(i, _ int) {
 				ttrG.Set(items[i])
 			})
+			print_label("uART", "set-rand")
+			uART = newUART()
+			lotsa.Ops(N, 1, func(i, _ int) {
+				uART.Insert(itemsBinaryKey[i], i)
+			})
 			print_label("tidwall(M)", "set-rand")
 			ttrM = newTBTreeM(degree)
 			lotsa.Ops(N, 1, func(i, _ int) {
@@ -376,6 +383,27 @@ func main() {
 				ttrM.Load(items[i].key, items[i].val)
 			})
 		}
+
+		if withRandDel {
+			println()
+			println("** random delete **")
+
+			print_label("tidwall(G)", "rand-delete")
+			lotsa.Ops(N, 1, func(i, _ int) {
+				ttrG.Delete(items[i])
+			})
+
+			print_label("uART", "rand-delete")
+			lotsa.Ops(N, 1, func(i, _ int) {
+				uART.Remove(itemsBinaryKey[i])
+			})
+
+			print_label("google(G)", "rand-delete")
+			lotsa.Ops(N, 1, func(i, _ int) {
+				gtrG.Delete(items[i])
+			})
+		}
+
 		println()
 		println("** random get **")
 
