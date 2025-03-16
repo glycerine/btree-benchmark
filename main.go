@@ -7,6 +7,7 @@ import (
 	"os"
 	"sort"
 
+	"github.com/glycerine/uart"
 	gbtree "github.com/google/btree"
 	tbtree "github.com/tidwall/btree"
 	"github.com/tidwall/lotsa"
@@ -37,6 +38,12 @@ func lessG(a, b itemT) bool {
 
 func less(a, b interface{}) bool {
 	return a.(itemT).key < b.(itemT).key
+}
+
+func newUART() *uart.Tree {
+	tr := uart.NewArtTree()
+	tr.SkipLocking = true
+	return tr
 }
 
 func newTBTree(degree int) *tbtree.BTree {
@@ -74,6 +81,8 @@ func main() {
 
 	items := make([]itemT, N)
 	itemsM := make(map[int64]bool)
+	itemsBinaryKey := make([][]byte, N)
+	leafset := make([]*uart.Leaf, N)
 	for i := 0; i < N; i++ {
 		for {
 			key := rand.Int63n(10000000000000000)
@@ -83,6 +92,7 @@ func main() {
 				if len(items[i].key) != 16 {
 					panic("!")
 				}
+				leafset[i] = &uart.Leaf{}
 				break
 			}
 		}
@@ -95,6 +105,9 @@ func main() {
 		sort.Slice(items, func(i, j int) bool {
 			return less(items[i], items[j])
 		})
+		for i := range items {
+			itemsBinaryKey[i] = []byte(items[i].key)
+		}
 	}
 
 	shuffleInts := func() {
@@ -109,6 +122,7 @@ func main() {
 	ttr := newTBTree(degree)
 	ttrG := newTBTreeG(degree)
 	ttrM := newTBTreeM(degree)
+	uART := newUART()
 
 	withSeq := true
 	withRand := true
@@ -157,6 +171,36 @@ func main() {
 		lotsa.Ops(N, 1, func(i, _ int) {
 			ttrM.Set(items[i].key, items[i].val)
 		})
+		//fmt.Printf("back from lotsa.Ops for tidwall(M)\n")
+
+		print_label("uART", "set-seq")
+		uART = newUART()
+		lotsa.Ops(N, 1, func(i, _ int) {
+			// remember that Insert copies key, and makes a new leaf.
+			if true {
+				// uART uses 3x the memory of btrees.
+				// tidwall(G): set-seq 1,000,000 ops in 261ms, 3,836,715/sec, 260 ns/op, 49.2 MB, 51.6 bytes/op
+				// uART:       set-seq 1,000,000 ops in 330ms, 3,030,409/sec, 329 ns/op, 166.0 MB, 174.0 bytes/op
+
+				uART.Insert(itemsBinaryKey[i], i)
+			} else {
+				// The key copy could be avoided like this, but the NewLeaf is unavoidable.
+				// uART still uses 2x the memory of btrees, not counting the Leaf overhead.
+				// tidwall(G): set-seq 1,000,000 ops in 260ms, 3,844,936/sec, 260 ns/op, 49.2 MB, 51.6 bytes/op
+				// uART:       set-seq 1,000,000 ops in 255ms, 3,928,167/sec, 254 ns/op, 97.3 MB, 102.0 bytes/op
+				lf := leafset[i]
+				lf.Key = itemsBinaryKey[i]
+				lf.Value = i
+				uART.InsertLeaf(lf)
+			}
+		})
+
+		//_ = uART // does not suffice to keep uART from
+		//  being GC-ed before lotsa can measure its memory consumption!
+		// We do this to prevent that; otherwise mem measurement will be zero.
+		for range uart.Ascend(uART, nil, nil) {
+			break
+		}
 
 		if withHints {
 			print_label("tidwall", "set-seq-hint")
