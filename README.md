@@ -114,14 +114,10 @@ go run main.go
 degree=32, key=string (16 bytes), val=int64, count=1000000
 
 ** sequential set **
-google:     set-seq           1,000,000 ops in 343ms, 2,913,331/sec, 343 ns/op, 60.8 MB, 63.7 bytes/op
-google(G):  set-seq           1,000,000 ops in 284ms, 3,518,212/sec, 284 ns/op, 49.7 MB, 52.1 bytes/op
-tidwall:    set-seq           1,000,000 ops in 291ms, 3,433,181/sec, 291 ns/op, 56.4 MB, 59.1 bytes/op
-tidwall(G): set-seq           1,000,000 ops in 270ms, 3,702,349/sec, 270 ns/op, 49.2 MB, 51.6 bytes/op
-tidwall(M): set-seq           1,000,000 ops in 215ms, 4,660,736/sec, 214 ns/op, 49.2 MB, 51.6 bytes/op
-tidwall(G) with locking: set-seq 1,000,000 ops in 265ms, 3,766,627/sec, 265 ns/op
-badger/skiplist: set-seq         1,000,000 ops in 362ms, 2,764,712/sec, 361 ns/op
-zhangyunhao116/skipmap: set-seq  1,000,000 ops in 306ms, 3,270,767/sec, 305 ns/op
-uART:       set-seq           1,000,000 ops in 297ms, 3,364,048/sec, 297 ns/op, 165.9 MB, 174.0 bytes/op
-
+tidwall(G) with locking: 270ms, 3,705,761/sec, 269 ns/op, 49.2 MB, 51.6 bytes/op
+google(G): (no locking)  281ms, 3,557,008/sec, 281 ns/op, 49.7 MB, 52.1 bytes/op
+tidwall:    set-seq      285ms, 3,508,612/sec, 285 ns/op, 56.4 MB, 59.1 bytes/op
+uART:       set-seq      288ms, 3,466,263/sec, 288 ns/op, 166.0 MB,174.1 bytes/op
+zhangyunhao116/skipmap:  304ms, 3,294,504/sec, 303 ns/op, 99.5 MB, 104.4 bytes/op
+badger/skiplist:         353ms, 2,832,188/sec, 353 ns/op
 ```

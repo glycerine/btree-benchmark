@@ -48,7 +48,7 @@ func less(a, b interface{}) bool {
 
 func newUART() *uart.Tree {
 	tr := uart.NewArtTree()
-	tr.SkipLocking = true
+	//tr.SkipLocking = true
 	return tr
 }
 
@@ -70,7 +70,7 @@ func newTBTreeG_withLocking(degree int) *tbtree.BTreeG[itemT] {
 		Degree:  degree,
 	})
 }
-func newTBTreeM(degree int) *tbtree.Map[keyT, valT] {
+func newTBTreeM(degree int) (r *tbtree.Map[keyT, valT]) {
 	return tbtree.NewMap[keyT, valT](degree)
 }
 func newGBTree(degree int) *gbtree.BTree {
@@ -204,7 +204,7 @@ func main() {
 		lotsa.Ops(N, 1, func(i, _ int) {
 			skiplist.Put(itemsBinaryKey[i], y.ValueStruct{Value: itemsBinaryKey[i], Meta: 0, UserMeta: 0})
 		})
-		skiplist.Get(itemsBinaryKey[0]) // prevent too soon GC.
+		skiplist.Get(itemsBinaryKey[0]) // try to prevent too soon GC, does not appear to be working.
 
 		print_label("zhangyunhao116/skipmap", "set-seq")
 		skipm = skipmap.NewFunc[[]byte, int](func(a, b []byte) bool {
