@@ -19,8 +19,12 @@ require (
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b // indirect
 	github.com/golang/snappy v0.0.3 // indirect
+	github.com/ironpark/skiplist v0.0.0-20230103051251-d63941a7d606 // indirect
 	github.com/klauspost/compress v1.12.3 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	golang.org/x/net v0.0.0-20201021035429-f5854403a974 // indirect
-	golang.org/x/sys v0.0.0-20221010170243-090e33056c14 // indirect
+	github.com/zhangyunhao116/fastrand v0.3.0 // indirect
+	github.com/zhangyunhao116/skipmap v0.10.1 // indirect
+	golang.org/x/exp v0.0.0-20221217163422-3c43f8badb15 // indirect
+	golang.org/x/net v0.4.0 // indirect
+	golang.org/x/sys v0.3.0 // indirect
 )

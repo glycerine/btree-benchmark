@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"math/rand"
@@ -14,6 +15,8 @@ import (
 
 	"github.com/dgraph-io/badger/v3/skl"
 	"github.com/dgraph-io/badger/v3/y"
+
+	"github.com/zhangyunhao116/skipmap"
 )
 
 type keyT string
@@ -135,6 +138,9 @@ func main() {
 	ttrM := newTBTreeM(degree)
 	uART := newUART()
 	skiplist := skl.NewSkiplist(int64(N * skl.MaxNodeSize))
+	skipm := skipmap.NewFunc[[]byte, int](func(a, b []byte) bool {
+		return bytes.Compare(a, b) < 0
+	})
 
 	withSeq := true
 	withRand := true
@@ -185,16 +191,29 @@ func main() {
 		lotsa.Ops(N, 1, func(i, _ int) {
 			ttrM.Set(items[i].key, items[i].val)
 		})
+
 		print_label("tidwall(G) with locking", "set-seq")
 		ttrGlocking = newTBTreeG_withLocking(degree)
 		lotsa.Ops(N, 1, func(i, _ int) {
 			ttrGlocking.Set(items[i])
 		})
+		ttrGlocking.Get(items[0]) // prevent GC til after lotsa can report.
+
 		print_label("badger/skiplist", "set-seq")
 		skiplist = skl.NewSkiplist(int64(N * skl.MaxNodeSize))
 		lotsa.Ops(N, 1, func(i, _ int) {
 			skiplist.Put(itemsBinaryKey[i], y.ValueStruct{Value: itemsBinaryKey[i], Meta: 0, UserMeta: 0})
 		})
+		skiplist.Get(itemsBinaryKey[0]) // prevent too soon GC.
+
+		print_label("zhangyunhao116/skipmap", "set-seq")
+		skipm = skipmap.NewFunc[[]byte, int](func(a, b []byte) bool {
+			return bytes.Compare(a, b) < 0
+		})
+		lotsa.Ops(N, 1, func(i, _ int) {
+			skipm.Store(itemsBinaryKey[i], i)
+		})
+		skipm.Load(itemsBinaryKey[0]) // prevent GC too soon.
 
 		//fmt.Printf("back from lotsa.Ops for tidwall(M)\n")
 
