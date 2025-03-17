@@ -120,4 +120,22 @@ tidwall:    set-seq      285ms, 3,508,612/sec, 285 ns/op, 56.4 MB, 59.1 bytes/op
 uART:       set-seq      288ms, 3,466,263/sec, 288 ns/op, 166.0 MB,174.1 bytes/op
 zhangyunhao116/skipmap:  304ms, 3,294,504/sec, 303 ns/op, 99.5 MB, 104.4 bytes/op
 badger/skiplist:         353ms, 2,832,188/sec, 353 ns/op
+
+** sequential delete **
+zhangyunhao116/skipmap:  1,000,000 ops in 16ms, 63,214,721/sec, 15 ns/op
+tidwall(G) with locking: 1,000,000 ops in 33ms, 30,352,844/sec, 32 ns/op
+uART:       seq-delete   1,000,000 ops in 122ms, 8,218,107/sec, 121 ns/op
+tidwall(G): seq-delete   1,000,000 ops in 248ms, 4,039,629/sec, 247 ns/op
+google(G):  seq-delete   1,000,000 ops in 254ms, 3,939,167/sec, 253 ns/op
+google:     seq-delete   1,000,000 ops in 320ms, 3,128,727/sec, 319 ns/op
+
+
+** random set **
+tidwall(M): (no locking)      1,000,000 ops in 989ms, 1,011,151/sec, 988 ns/op, 34.9 MB, 36.6 bytes/op
+google(G): (no locking)       1,000,000 ops in 997ms, 1,003,214/sec, 996 ns/op, 35.0 MB, 36.7 bytes/op
+tidwall(G) with locking:      1,000,000 ops in 1054ms, 948,954/sec, 1053 ns/op, 34.9 MB, 36.6 bytes/op
+badger/skiplist: set-rand     1,000,000 ops in 1554ms, 643,388/sec, 1554 ns/op
+zhangyunhao116/skipmap:       1,000,000 ops in 2065ms, 484,192/sec, 2065 ns/op, 99.5 MB, 104.4 bytes/op
+
+
 ```

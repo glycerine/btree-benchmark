@@ -355,6 +355,30 @@ func main() {
 			gtr.Delete(items[i])
 		})
 
+		print_label("tidwall(G) with locking", "seq-delete")
+		ttrGlocking = newTBTreeG_withLocking(degree)
+		lotsa.Ops(N, 1, func(i, _ int) {
+			ttrGlocking.Delete(items[i])
+		})
+		ttrGlocking.Get(items[0]) // prevent GC til after lotsa can report.
+
+		// does not appear to support delete
+		//print_label("badger/skiplist", "seq-delete")
+		//skiplist = skl.NewSkiplist(int64(N * skl.MaxNodeSize))
+		//lotsa.Ops(N, 1, func(i, _ int) {
+		//	skiplist.Remove(itemsBinaryKey[i])
+		//})
+		//skiplist.Get(itemsBinaryKey[0]) // try to prevent too soon GC, does not appear to be working.
+
+		print_label("zhangyunhao116/skipmap", "seq-delete")
+		skipm = skipmap.NewFunc[[]byte, int](func(a, b []byte) bool {
+			return bytes.Compare(a, b) < 0
+		})
+		lotsa.Ops(N, 1, func(i, _ int) {
+			skipm.Delete(itemsBinaryKey[i])
+		})
+		skipm.Load(itemsBinaryKey[0]) // prevent GC too soon.
+
 	}
 
 	if withRand {
@@ -392,6 +416,30 @@ func main() {
 			lotsa.Ops(N, 1, func(i, _ int) {
 				ttrM.Set(items[i].key, items[i].val)
 			})
+
+			print_label("tidwall(G) with locking", "set-rand")
+			ttrGlocking = newTBTreeG_withLocking(degree)
+			lotsa.Ops(N, 1, func(i, _ int) {
+				ttrGlocking.Set(items[i])
+			})
+			ttrGlocking.Get(items[0]) // prevent GC til after lotsa can report.
+
+			print_label("badger/skiplist", "set-rand")
+			skiplist = skl.NewSkiplist(int64(N * skl.MaxNodeSize))
+			lotsa.Ops(N, 1, func(i, _ int) {
+				skiplist.Put(itemsBinaryKey[i], y.ValueStruct{Value: itemsBinaryKey[i], Meta: 0, UserMeta: 0})
+			})
+			skiplist.Get(itemsBinaryKey[0]) // try to prevent too soon GC, does not appear to be working.
+
+			print_label("zhangyunhao116/skipmap", "set-rand")
+			skipm = skipmap.NewFunc[[]byte, int](func(a, b []byte) bool {
+				return bytes.Compare(a, b) < 0
+			})
+			lotsa.Ops(N, 1, func(i, _ int) {
+				skipm.Store(itemsBinaryKey[i], i)
+			})
+			skipm.Load(itemsBinaryKey[0]) // prevent GC too soon.
+
 			if withHints {
 				print_label("tidwall", "set-rand-hint")
 				ttr = newTBTree(degree)
