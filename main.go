@@ -11,6 +11,9 @@ import (
 	gbtree "github.com/google/btree"
 	tbtree "github.com/tidwall/btree"
 	"github.com/tidwall/lotsa"
+
+	"github.com/dgraph-io/badger/v3/skl"
+	"github.com/dgraph-io/badger/v3/y"
 )
 
 type keyT string
@@ -55,6 +58,12 @@ func newTBTree(degree int) *tbtree.BTree {
 func newTBTreeG(degree int) *tbtree.BTreeG[itemT] {
 	return tbtree.NewBTreeGOptions(lessG, tbtree.Options{
 		NoLocks: true,
+		Degree:  degree,
+	})
+}
+func newTBTreeG_withLocking(degree int) *tbtree.BTreeG[itemT] {
+	return tbtree.NewBTreeGOptions(lessG, tbtree.Options{
+		NoLocks: false,
 		Degree:  degree,
 	})
 }
@@ -122,8 +131,10 @@ func main() {
 	gtrG := newGBTreeG(degree)
 	ttr := newTBTree(degree)
 	ttrG := newTBTreeG(degree)
+	ttrGlocking := newTBTreeG_withLocking(degree)
 	ttrM := newTBTreeM(degree)
 	uART := newUART()
+	skiplist := skl.NewSkiplist(int64(N * skl.MaxNodeSize))
 
 	withSeq := true
 	withRand := true
@@ -174,6 +185,17 @@ func main() {
 		lotsa.Ops(N, 1, func(i, _ int) {
 			ttrM.Set(items[i].key, items[i].val)
 		})
+		print_label("tidwall(G) with locking", "set-seq")
+		ttrGlocking = newTBTreeG_withLocking(degree)
+		lotsa.Ops(N, 1, func(i, _ int) {
+			ttrGlocking.Set(items[i])
+		})
+		print_label("badger/skiplist", "set-seq")
+		skiplist = skl.NewSkiplist(int64(N * skl.MaxNodeSize))
+		lotsa.Ops(N, 1, func(i, _ int) {
+			skiplist.Put(itemsBinaryKey[i], y.ValueStruct{Value: itemsBinaryKey[i], Meta: 0, UserMeta: 0})
+		})
+
 		//fmt.Printf("back from lotsa.Ops for tidwall(M)\n")
 
 		print_label("uART", "set-seq")
