@@ -157,20 +157,80 @@ func main() {
 	var hint tbtree.PathHint
 	var hintG tbtree.PathHint
 
-	if false {
+	if true {
 		// titrate degree
-		for _, d := range []int{2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 3000} {
-			print_label("tidwall(G)", fmt.Sprintf("degree %v", d))
-			ttrGlocking = newTBTreeG_withLocking(d)
+
+		sortInts()
+		for _, d := range []int{2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 3000, 4096, 10_000} {
+			//print_label("tidwall", fmt.Sprintf("get-seq degree %v", d))
+			print_label("google", fmt.Sprintf("get-seq degree %v", d))
+			ttr = newTBTree(d)
+			//ttrGlocking = newTBTreeG_withLocking(d)
 			//ttrGlocking = newTBTreeG(d) // without locks?
-			//ttrGlocking := newGBTree(d) // google b-tree?
+			ttr := newGBTree(d) // google b-tree?
+			for i := range N {
+				//ttr.Set(items[i])
+				ttr.ReplaceOrInsert(items[i])
+			}
 			lotsa.Ops(N, 1, func(i, _ int) {
-				ttrGlocking.Set(items[i])
-				//ttrGlocking.ReplaceOrInsert(items[i])
+				//re := ttr.Get(items[i])
+				//if re == nil {
+				//	panic(re)
+				//}
+				re := ttr.Get(items[i])
+				if re == nil {
+					panic(re)
+				}
 			})
-			ttrGlocking.Get(items[0]) // prevent GC til after lotsa can report.
+
 		}
 	}
+	/*
+	   google:     get-seq degree 2  1,000,000 ops in 511ms, 1,956,237/sec, 511 ns/op
+	   google:     get-seq degree 4  1,000,000 ops in 349ms, 2,862,517/sec, 349 ns/op
+	   google:     get-seq degree 8  1,000,000 ops in 326ms, 3,069,292/sec, 325 ns/op
+	   google:     get-seq degree 16 1,000,000 ops in 286ms, 3,496,080/sec, 286 ns/op
+	   google:     get-seq degree 32 1,000,000 ops in 271ms, 3,684,888/sec, 271 ns/op
+	   google:     get-seq degree 64 1,000,000 ops in 275ms, 3,638,470/sec, 274 ns/op
+	   google:     get-seq degree 128 1,000,000 ops in 265ms, 3,771,566/sec, 265 ns/op
+	   google:     get-seq degree 256 1,000,000 ops in 260ms, 3,845,856/sec, 260 ns/op
+	   google:     get-seq degree 512 1,000,000 ops in 275ms, 3,635,209/sec, 275 ns/op
+	   google:     get-seq degree 1024 1,000,000 ops in 257ms, 3,896,529/sec, 256 ns/op
+	   google:     get-seq degree 2048 1,000,000 ops in 255ms, 3,926,813/sec, 254 ns/op
+	   google:     get-seq degree 3000 1,000,000 ops in 250ms, 3,992,763/sec, 250 ns/op
+	   google:     get-seq degree 4096 1,000,000 ops in 254ms, 3,940,678/sec, 253 ns/op
+	   google:     get-seq degree 10000 1,000,000 ops in 246ms, 4,061,960/sec, 246 ns/op
+	*/
+	/*
+	   tidwall:    get-seq degree 2  1,000,000 ops in 415ms, 2,410,872/sec, 414 ns/op, 480 bytes, 0.0 bytes/op
+	   tidwall:    get-seq degree 4  1,000,000 ops in 329ms, 3,040,262/sec, 328 ns/op, 3.6 KB, 0.0 bytes/op
+	   tidwall:    get-seq degree 8  1,000,000 ops in 300ms, 3,336,168/sec, 299 ns/op
+	   tidwall:    get-seq degree 16 1,000,000 ops in 263ms, 3,797,771/sec, 263 ns/op
+	   tidwall:    get-seq degree 32 1,000,000 ops in 260ms, 3,849,260/sec, 259 ns/op
+	   tidwall:    get-seq degree 64 1,000,000 ops in 253ms, 3,951,080/sec, 253 ns/op
+	   tidwall:    get-seq degree 128 1,000,000 ops in 253ms, 3,950,534/sec, 253 ns/op
+	   tidwall:    get-seq degree 256 1,000,000 ops in 258ms, 3,868,960/sec, 258 ns/op
+	   tidwall:    get-seq degree 512 1,000,000 ops in 244ms, 4,097,502/sec, 244 ns/op
+	   tidwall:    get-seq degree 1024 1,000,000 ops in 232ms, 4,307,347/sec, 232 ns/op
+	   tidwall:    get-seq degree 2048 1,000,000 ops in 243ms, 4,113,453/sec, 243 ns/op
+	   tidwall:    get-seq degree 3000 1,000,000 ops in 231ms, 4,320,657/sec, 231 ns/op
+	*/
+	// this is actually a random get, not a sequential one! forgot to sortInts() first:
+	/*
+	   tidwall:    get-seq degree 2  1,000,000 ops in 2228ms, 448,845/sec, 2227 ns/op
+	   tidwall:    get-seq degree 4  1,000,000 ops in 1934ms, 517,088/sec, 1933 ns/op
+	   tidwall:    get-seq degree 8  1,000,000 ops in 1847ms, 541,467/sec, 1846 ns/op
+	   tidwall:    get-seq degree 16 1,000,000 ops in 1739ms, 574,950/sec, 1739 ns/op
+	   tidwall:    get-seq degree 32 1,000,000 ops in 1638ms, 610,533/sec, 1637 ns/op
+	   tidwall:    get-seq degree 64 1,000,000 ops in 1743ms, 573,730/sec, 1742 ns/op
+	   tidwall:    get-seq degree 128 1,000,000 ops in 1510ms, 662,270/sec, 1509 ns/op
+	   tidwall:    get-seq degree 256 1,000,000 ops in 1560ms, 641,201/sec, 1559 ns/op
+	   tidwall:    get-seq degree 512 1,000,000 ops in 1600ms, 624,900/sec, 1600 ns/op
+	   tidwall:    get-seq degree 1024 1,000,000 ops in 1532ms, 652,692/sec, 1532 ns/op
+	   tidwall:    get-seq degree 2048 1,000,000 ops in 1512ms, 661,302/sec, 1512 ns/op, 480 bytes, 0.0 bytes/op
+	   tidwall:    get-seq degree 3000 1,000,000 ops in 1526ms, 655,190/sec, 1526 ns/op, 384 bytes, 0.0 bytes/op
+	*/
+	return
 
 	if false {
 		// fill up, titrate degree for seq read
@@ -198,6 +258,7 @@ func main() {
 			})
 		}
 	}
+	// random get:
 	/*
 	   google(G):  get-seq degree 2  1,000,000 ops in 2569ms, 389,291/sec, 2568 ns/op
 	   google(G):  get-seq degree 4  1,000,000 ops in 1960ms, 510,115/sec, 1960 ns/op
@@ -213,7 +274,7 @@ func main() {
 	   google(G):  get-seq degree 3000 1,000,000 ops in 1551ms, 644,578/sec, 1551 ns/op
 	*/
 
-	// 2048 sweet spot
+	// random get, 2048 sweet spot
 	/*
 	   tidwall(G): get-seq degree 2  1,000,000 ops in 1776ms, 563,116/sec, 1775 ns/op
 	   tidwall(G): get-seq degree 4  1,000,000 ops in 1425ms, 701,783/sec, 1424 ns/op
@@ -230,7 +291,7 @@ func main() {
 
 	*/
 	//return
-	// degree 64 is the sweet spot.
+	// random get, degree 64 is the sweet spot.
 	/*
 	   tidwall(G): degree 2          1,000,000 ops in 1802ms, 555,010/sec, 1801 ns/op, 70.5 MB, 73.9 bytes/op
 	   tidwall(G): degree 4          1,000,000 ops in 1317ms, 759,482/sec, 1316 ns/op, 52.9 MB, 55.4 bytes/op
@@ -245,6 +306,7 @@ func main() {
 	   tidwall(G): degree 2048       1,000,000 ops in 2340ms, 427,399/sec, 2339 ns/op, 25.7 MB, 27.0 bytes/op
 	   tidwall(G): degree 3000       1,000,000 ops in 2893ms, 345,677/sec, 2892 ns/op, 33.1 MB, 34.7 bytes/op
 	*/
+	// random get
 	/*
 	   degree=32, key=string (16 bytes), val=int64, count=1000000
 	   tidwall(G): degree 32         1,000,000 ops in 874ms, 1,144,162/sec, 874 ns/op, 34.9 MB, 36.6 bytes/op
@@ -258,7 +320,7 @@ func main() {
 	   tidwall(G): degree 4096       1,000,000 ops in 3723ms, 268,579/sec, 3723 ns/op, 26.7 MB, 28.0 bytes/op
 	   tidwall(G): degree 10000      1,000,000 ops in 7272ms, 137,505/sec, 7272 ns/op, 25.4 MB, 26.7 bytes/op
 	*/
-	// but same thing without locks
+	// but same thing without locks, random get
 	/*
 	   degree=32, key=string (16 bytes), val=int64, count=1000000
 	   tidwall(G): degree 32         1,000,000 ops in 862ms, 1,159,832/sec, 862 ns/op, 34.9 MB, 36.6 bytes/op
